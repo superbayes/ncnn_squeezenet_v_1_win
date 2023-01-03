@@ -44,7 +44,7 @@ void forward_squeezenet_v_1(std::string strImagePath)
 	std::vector<std::string> vecLabel;
 	read_labels(strLabelPath, vecLabel);
 
-	const float mean_vals[3] = { 104.f, 117.f, 123.f };
+	
 	cv::Mat matImage = cv::imread(strImagePath);
 	// cv::resize(matImage, matImage, cv::Size(227, 227));
 	if (matImage.empty()) 
@@ -78,8 +78,15 @@ void forward_squeezenet_v_1(std::string strImagePath)
 	{
 		matIn = ncnn::Mat::from_pixels(matImage.data, ncnn::Mat::PIXEL_BGR, nNetInputWidth, nNetInputHeight);
 	}
-	// 数据预处理
-	matIn.substract_mean_normalize(mean_vals, 0);
+	// 数据预处理	
+	// 	def preprocess_input(x):
+	// 	    x /= 255
+	// 	    x -= np.array([0.485, 0.456, 0.406])
+	// 	    x /= np.array([0.229, 0.224, 0.225])
+	// 	    return x
+	const float mean_vals[3] = { 0.485*255.0, 0.456*255.0, 0.406*255.0 };
+	const float corr_vals[3] = { 1.0/(0.229*255.0), 1.0/(0.224*255.0), 1.0/(0.225*255.0) };
+	matIn.substract_mean_normalize(mean_vals, corr_vals);
 
 	// forward
 	ncnn::Extractor ex = net.create_extractor();
